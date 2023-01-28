@@ -1,0 +1,125 @@
+<html>
+
+<body>
+    <p id="p1">
+        <p>Problem 1a: it is not a canonical Javascript type </p>
+        <p>Problem 1b: it is not a canonical Javascript type</p>
+        <p>Problem 1c: it is a canonical Javascript type</p>
+        <script>
+            console.log(typeof(true));
+            console.log((true + 1) == "2");
+        </script>
+
+        <p>Problem 1d: it is not a canonical Javascript type</p>
+        <p>Problem 1e: it is a canonical Javascript type</p>
+        <script>
+            console.log(typeof(2));
+        </script>
+
+        <p>Problem 1f: A JavaScript class is a type of function(object)</p>
+        <script>
+            console.log('hhhhhh');
+                console.log(typeof(Math));
+                console.log(new Object());
+                    console.log(typeof (new Object()))
+        </script>
+
+        <p>Problem 1g: it is a canonical Javascript type, but it shows unexpected type: object</p>
+        <script> console.log(typeof (/regex/))</script>
+
+        <p>Problem 1h: it is a canonical Javascript type</p>
+        <script>
+        console.log(typeof('hello'))
+        // some unexpected behavior
+        console.log(typeof("2" + "3"))
+        </script>
+
+         <p>Problem 1i:  it has unusual behavior</p>
+        <script>console.log(typeof("ドーナツ"))</script>
+
+        <p>Problem 1j: it is a canonical Javascript type</p>
+            <script>let dict = { "jasimine": 11, "natalia": 22 };
+                console.log(typeof(dict));
+                console.log(dict["jasimine"]);
+                console.log(dict.natalia)
+
+                let lists = [1, 2, 3];
+                console.log( lists );
+                console.log(typeof( lists ));
+                </script>
+
+        <p>Problem 1k: it is a canonical Javascript type and cause unusual behavior </p>
+        <script>console.log(null === undefined);
+        console.log(6 + null);
+        // some unusual behaviors
+        </script>
+
+        <p>Problem 1I: it is a canonical Javascript type, functions are objects</p>
+            <script>console.log(typeof (console.log));
+        
+            </script>
+
+        <p>Problem 1m: NaN causes unusual behavior</p>
+        <script> console.log(NaN === NaN);</script>
+
+        <p>Problem 1n: it is not a canonical Javascript type</p>
+
+        <p>Problem 1o: it is not a canonical Javascript type</p>
+
+        <p>Problem 1p: it is a canonical Javascript type and cause unusual behavior</p>  
+        <script>console.log(typeof (undefined));</script>
+       </p>
+
+
+<br>
+
+<p id="p2">
+    <p>Type coercion is the automatic or implicit conversion of values from one data type to another.</p>
+    <p>number + string</p>
+    <script>console.log('Problem 2 here! ! !')
+    console.log(3 + "jasimine");</script>
+
+    <p>boolean + string</p>
+    <script>console.log("true" + false);</script>
+</p>
+
+<br>
+
+<p id="p3">
+    <p>Problem 3: See details in my html</p>
+<script>
+    console.log('Problem 3 here! ! !');
+    function fact(n){
+        // if n is 0
+        if (n===0){
+            return 1
+        }
+        else if (n < 0){
+            return undefined
+        }
+        else {
+            return n* fact(n-1)
+        }
+    }
+
+    console.log(fact(-2));
+    console.log(fact(0));
+    console.log(fact(1));
+    console.log(fact(5));
+    console.log(fact(12));
+
+</script>
+</p>
+
+
+<br>
+<p id="p4">
+<p>We will get 0 point for any late work. However, we have 5 slip days to extend our deadline.</p>
+<p>if grader cannot open our file or we submit wrong file, we will receive 0 point.  </p>
+</p>
+  
+
+
+</body>
+
+</html>
