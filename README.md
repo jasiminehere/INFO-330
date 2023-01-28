@@ -1,2 +1,2 @@
-# INFO  330
+# INFO 330
 Javascript - d3 data visualizations
