@@ -1,0 +1,116 @@
+
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+    .gridlines line{
+        stroke: #bbb
+    }
+
+    .gridlines .domain{
+        stroke:none
+    }
+    
+    </style>
+</head>
+<p id="1">
+    <h2>Problem 1</h2>
+    <fieldset>
+        <h3>A </h3>
+        <p>Marks: regions of colored hair</p>
+        <p>Channels: intensity of colors; position of geograph(need more argue)</p>
+    </fieldset>
+
+    <fieldset>
+        <h3>B</h3>
+        <p>Marks: cicle </p>
+        <p>Channels: color of circle;curve shape; horizontal and vertical positions</p>
+    </fieldset>
+
+    <fieldset>
+        <h3>C</h3>
+        <p>Marks:blue rectangles </p>
+        <p>Channels: Varing the vertical aligned length and horizontal aligned positions of rectangles  </p>
+    </fieldset>
+</p>
+
+<br>
+
+<p>
+    <!-- style="background:#F5F5F5 -->
+    <h2>Problem 2</h2>
+    <svg id="all" height="500" width="500" margin-bottom="30px" "></svg>
+    
+    <script>
+    const svg = d3.select('svg#all');
+    const width = svg.attr('width');
+    const height = svg.attr('height');
+    const margins = {top: 10, right: 10, bottom: 50, left: 50}; 
+    const chartWidth = width - margins.left - margins.right;
+    const chartHeight = height - margins.top - margins.bottom;
+
+    let chartArea = svg.append('g')
+                       .attr('transform',`translate(${margins.left},${margins.top})`);
+
+    d3.json('chip_dataset.json').then((data)=>{
+        console.log(data);
+    
+         const releaseExtent = d3.extent(data, d => d['Release Day'] );
+         console.log(releaseExtent);
+        const releaseScale = d3.scaleLinear().domain(releaseExtent).range([0, chartWidth]);
+
+          const TransExtent = d3.extent(data, d => d['Transistors(million)'] );
+          console.log(TransExtent);
+          const TransScale = d3.scaleLog().domain(TransExtent)
+                        .range([chartHeight, 0]);
+
+data.forEach( (d, i) => {
+
+      chartArea.append('circle')
+          .attr('cx', releaseScale(d['Release Day']))
+          .attr('cy',  TransScale(d['Transistors(million)']))
+          .attr('r', "3px")
+          .attr('opacity', 0.3)
+          .attr('index', i) 
+          .style('fill', 'darkblue');
+
+    });
+let leftAxis = d3.axisLeft(TransScale);
+    let gTag = svg.append('g')
+      .attr('class', 'y axis')
+      .attr('transform',`translate(${margins.left-10},${margins.top})`) 
+
+    leftAxis(gTag)
+
+let bottomAxis = d3.axisBottom(releaseScale).ticks(6)  // .ticks tells it how many ticks to draw
+    let element = svg.append('g')
+                    .attr('class', 'y axis')
+                    .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+                    //.call(bottomAxis);
+    bottomAxis(element);
+
+    let leftGridlines = d3.axisLeft(TransScale)
+                          .tickSize(-chartWidth-10)
+                          .tickFormat('');
+                          
+    // Notice how we use a different class
+    svg.append('g').attr('class', 'y gridlines') // See CSS at top of file
+      .attr('transform',`translate(${margins.left-10},${margins.top})`)
+      .call(leftGridlines);
+
+       let bottomGridlines = d3.axisBottom(releaseScale)
+                            .tickSize(-chartHeight-10)
+                            .tickFormat('')
+                            .ticks(6); // Borrowing from our axis labels
+    svg.append('g').attr('class', 'x gridlines') // See CSS at top of file
+      .attr('transform',`translate(${margins.left},${chartHeight+margins.top+10})`)
+      .call(bottomGridlines);
+
+  chartArea.raise()
+
+    })
+
+
+
+    
+    </script>
+</p>

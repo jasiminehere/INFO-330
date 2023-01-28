@@ -1,0 +1,62 @@
+<html>
+
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <p>Movie Barcodes</p>
+        <br>
+        <br>
+        <div id="barcodes">
+        </div>
+
+        <script>
+            async function requestData() {
+                const barcodes = await d3.json("./movie_barcodes.json");
+                const container = d3.select("#barcodes");
+        
+                const movieAtt = container.selectAll(".movie").data(barcodes)
+                    .join("div")
+                    .attr("class", "movie")
+            
+                const newCanvas = movieAtt.append("canvas")
+                    .attr("width", 800)
+                    .attr("height", 100)
+                
+                const movieTitle = movieAtt.append("h5")
+                    .text(d => d.title)
+                
+                newCanvas.each(function (d, i) {
+                    let ctx = this.getContext("2d");
+                    let imageData = ctx.getImageData(0, 0, 800,100);
+                    let pixel = imageData.data;
+
+                    d.bars.forEach(item => {
+                        let num = parseInt(item.color.replace('#', ''), 16);
+                        let r = (num >> 16) & 255;
+                        let g = (num >> 8) & 255;
+                        let b = num & 255;
+
+                        let x = item.x;
+                        let y = item.y;
+                        for (let y = 0; y < 100; y++) {
+                            let position = (x + y * 800) * 4;
+                            pixel[position] = r;
+                            pixel[position + 1] = g;
+                            pixel[position + 2] = b;
+                            pixel[position + 3] = 255;
+
+                        }
+                    })
+                    ctx.putImageData(imageData, 0, 0);
+                })
+            }
+                
+            requestData();
+        </script>
+    </div>
+</body>
+
+</html>

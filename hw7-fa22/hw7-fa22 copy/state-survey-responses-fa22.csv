@@ -1,0 +1,53 @@
+state_name,state_code,state_short,total
+Alabama,Alabama,Alabama,8
+Alaska,Alaska,Alaska,22
+Arizona,Arizona,Arizona,56
+Arkansas,Arkansas,Arkansas,5
+California,California,California,166
+Colorado,Colorado,Colorado,49
+Connecticut,Connecticut,Connecticut,97
+Delaware,Delaware,Delaware,53
+District of Columbia,District of Columbia,District of Columbia,116
+Florida,Florida,Florida,151
+Georgia,Georgia,Georgia,51
+Hawaii,Hawaii,Hawaii,41
+Idaho,Idaho,Idaho,15
+Illinois,Illinois,Illinois,68
+Indiana,Indiana,Indiana,30
+Iowa,Iowa,Iowa,10
+Kansas,Kansas,Kansas,11
+Kentucky,Kentucky,Kentucky,18
+Louisiana,Louisiana,Louisiana,18
+Maine,Maine,Maine,61
+Maryland,Maryland,Maryland,96
+Massachusetts,Massachusetts,Massachusetts,150
+Michigan,Michigan,Michigan,53
+Minnesota,Minnesota,Minnesota,24
+Mississippi,Mississippi,Mississippi,4
+Missouri,Missouri,Missouri,24
+Montana,Montana,Montana,18
+Nebraska,Nebraska,Nebraska,12
+Nevada,Nevada,Nevada,53
+New Hampshire,New Hampshire,New Hampshire,59
+New Jersey,New Jersey,New Jersey,151
+New Mexico,New Mexico,New Mexico,24
+New York,New York,New York,235
+North Carolina,North Carolina,North Carolina,61
+North Dakota,North Dakota,North Dakota,2
+Ohio,Ohio,Ohio,54
+Oklahoma,Oklahoma,Oklahoma,6
+Oregon,Oregon,Oregon,25
+Pennsylvania,Pennsylvania,Pennsylvania,154
+Puerto Rico,Puerto Rico,Puerto Rico,21
+Rhode Island,Rhode Island,Rhode Island,70
+South Carolina,South Carolina,South Carolina,42
+South Dakota,South Dakota,South Dakota,9
+Tennessee,Tennessee,Tennessee,31
+Texas,Texas,Texas,59
+Utah,Utah,Utah,47
+Vermont,Vermont,Vermont,56
+Virginia,Virginia,Virginia,87
+Washington,Washington,Washington,76
+West Virginia,West Virginia,West Virginia,29
+Wisconsin,Wisconsin,Wisconsin,25
+Wyoming,Wyoming,Wyoming,24

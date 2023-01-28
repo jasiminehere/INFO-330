@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+
+    <svg id="graph" height="500" width="1200" style="margin-top:50px"></svg>
+
+
+</body>
+
+<script>
+
+    const requestData = async()=>{
+        let data_nodes = await d3.csv("senate.109.rollcall.nodes.csv")
+        console.log(data_nodes);
+        let data_edges = await d3.csv("senate.109.rollcall.edges.csv");
+        console.log(data_edges);
+        const partyScale = d3.scaleOrdinal().domain(["Dem", "Rep","Ind"]).range(["blue", "red","yellow"]);
+    
+
+        let allLayer = d3.select("svg").append("g");
+        let width = d3.select("svg").attr("width");
+        let height = d3.select("svg").attr("height");
+
+        
+
+        var sim = d3.forceSimulation()
+            .nodes(data_nodes)
+            .force("links", d3.forceLink()   // Keep nodes that are connected near each other
+                .links(data_edges)           // give the force an array of source/target objects
+                .id(d => d['icpsr']))
+            // if source and target don't provide array indices for nodes, .id will tell the force what to look for in the nodes when it is trying to connect things together. Provide a getter function for _node elements_
+            .force("repulse", d3.forceManyBody().strength(-150)) // electrostatic repulsion between all nodes to space them out
+            .force("ypos", d3.forceY()
+                .strength(0.05)
+                .y(height / 2.0))
+            .force("xpos", d3.forceX()
+                .strength(0.05)
+                .x(d => {
+                    if (d.party == "Dem") {
+                        return width*0.25;
+                    } else if (d.party == "Rep") {
+                        return width * 0.75;
+                    } else {
+                        return 0;
+                    }
+                })
+            )
+            .on("tick", render);
+
+            function render(){
+                // Edges
+                let lines = allLayer.selectAll("line.link").data(data_edges)
+                    .join(
+                        enter => enter.append("line")
+                            .attr("class", "link")
+                            .attr("stroke", "#333")
+                    )
+                    .attr("x1", d => d.source.x).attr("x2", d => d.target.x)   // Using the pointers d3.forceLink provides to access node x and y coords
+                    .attr("y1", d => d.source.y).attr("y2", d => d.target.y);
+                
+                // Nodes
+                let circles = allLayer.selectAll("circle.node").data(data_nodes)
+                    .join(
+                        enter => enter.append("circle")
+                            .attr("class", "node")
+                            .attr("stroke", "#333")
+                            .attr("r", 8)
+                            .attr("cx", 0)
+                            .attr("cy", 0)
+                            .attr("fill", d => partyScale(d.party))
+                        
+                            
+    
+                    )
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+
+
+
+            }
+
+        
+
+    };      
+
+    requestData();
+
+</script>
+
+</html>

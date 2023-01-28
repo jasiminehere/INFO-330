@@ -1,0 +1,135 @@
+<html>
+<head>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+
+<style>
+    .state {
+        fill: lightgrey;
+    }
+
+    .outline {
+        fill: none;
+        stroke: darkgrey;
+        stroke-width: 3px;
+    }
+
+     .zip-outline {
+        fill: none;
+        stroke: white;
+        stroke-width: 1px;
+    }
+
+    .graticule {
+        fill: none;
+        stroke: grey;
+        stroke-width: 1px;
+    }
+
+    .tooltip {
+        pointer-events: none;
+    }
+</style>
+</head>
+
+<body>
+    <svg id="choropleth" height="770" width="990" style="margin:20px"></svg>
+
+</body>
+
+<script>
+    const svg = d3.select("#choropleth");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+        const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+        const mapWidth = width - margin.left - margin.right;
+        const mapHeight = height - margin.top - margin.bottom;
+        const map = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        let viewport = map.append("g");
+
+
+    const requestData = async function () {
+            const nyincome = await d3.json("ny_income.topo.json");
+            console.log(nyincome);
+            var zips = topojson.feature(nyincome, nyincome.objects.zip_codes);
+            var zipsMesh = topojson.mesh(nyincome, nyincome.objects.zip_codes);
+            var stateMesh = topojson.mesh(nyincome, nyincome.objects.state);
+
+            var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], zips);
+            var path = d3.geoPath().projection(projection);
+            console.log(zips);
+            console.log(stateMesh);
+
+            var data = nyincome.objects.zip_codes.geometries
+            console.log(data);
+            let median_income = {}
+            data.forEach(row=>{
+                median_income[row.properties.median_income] = row.properties.median_income
+            })
+            console.log(median_income);
+            
+            const minMax = d3.extent(Object.values(median_income));
+            console.log(minMax);
+
+
+            let incomePaths= map.selectAll("path.state").data(zips.features)
+                .join("path")
+                .attr("class", "state")
+                .attr("d", path)
+                .attr("fill", "lightgrey")
+                .attr("stroke", "black")
+                .attr("stroke-width", 1);
+
+            const colorScale = d3.scaleQuantile()      // LLLLLLLLL
+            .domain(Object.values(median_income))
+            .range([ "#d1e8ed", "#adc2da", "#8879b3", "#762b80","#fff"]);
+    
+            incomePaths.style("fill", d => colorScale(median_income[d.properties.median_income]));
+
+            map.append("path")
+                .datum(zipsMesh)
+                .attr("class", "zip-outline")
+                .attr("d", path)
+                
+            
+            map.append("path")
+            .datum(stateMesh)
+            .attr("class", "outline")
+            .attr("d", path)
+            
+            
+            Position = projection([-76.4850, 42.4476])
+            console.log(Position);
+            map.append("circle")
+            .attr("r", 5)
+            .attr("fill", "black")
+            .attr("opacity", 2)
+            .attr("cx",Position[0])
+            .attr("cy", Position[1]);
+
+            
+            // viewport.append("path")
+            // .datum(stateMesh)
+            // .attr("class", "state-outline")
+            // .attr("d", path);
+            viewport.append("path")
+
+            var zoom = d3.zoom().on("zoom", mapZoomed);
+
+            map.call(zoom);
+
+            function mapZoomed(event){
+                    console.log(event);
+            }
+
+
+        }
+        requestData();
+
+
+</script>
+
+
+</html>

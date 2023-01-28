@@ -1,0 +1,187 @@
+<html>
+
+<head>
+    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
+
+    <style>
+        .state {
+            fill: lightgrey;
+            stroke: none;
+        }
+
+        .zips{
+            fill: slateblue;
+            stroke: none;
+        }
+
+        .state-outline {
+            fill: none;
+            stroke: darkgrey;
+            stroke-width: 3px;
+        }
+
+        .zip-outline {
+            fill: none;
+            stroke: white;
+            stroke-width: 1px;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: grey;
+            stroke-width: 1px;
+        }
+
+        .tooltip {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <svg id="choropleth" height="770" width="990" style="margin:20px"></svg>
+
+</body>
+
+<script>
+    const svg = d3.select("#choropleth");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+        const margin = { top: 80, right: 200, bottom: 20, left: 50 };
+        const mapWidth = width - margin.left - margin.right;
+        const mapHeight = height - margin.top - margin.bottom;
+        const map = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        let viewport = map.append("g");
+
+
+    const requestData = async function () {
+            const nyincome = await d3.json("ny_income.topo.json");
+            console.log(nyincome);
+            var zips = topojson.feature(nyincome, nyincome.objects.zip_codes);
+            var zipsMesh = topojson.mesh(nyincome, nyincome.objects.zip_codes);
+
+            var states = topojson.feature(nyincome, nyincome.objects.state);
+            var stateMesh = topojson.mesh(nyincome, nyincome.objects.state);
+            console.log(states);
+
+            var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], zips);
+            var path = d3.geoPath().projection(projection);
+            console.log(zips);
+            console.log(stateMesh);
+
+            var data = nyincome.objects.zip_codes.geometries
+            console.log(data);
+            let median_income = {}
+            data.forEach(row=>{
+                median_income[row.properties.median_income] = row.properties.median_income
+            })
+            console.log(median_income);
+            
+            const minMax = d3.extent(Object.values(median_income));
+            console.log(minMax);
+
+
+            const colorScale = d3.scaleQuantile()      // LLLLLLLLL
+            .domain(Object.values(median_income))
+            .range(["#9A1663", "#E0144C","#FF5858","#FF97C1", "#DC5F00"]);
+           
+            var legend = d3.legendColor()
+            .scale(colorScale)
+            .title("New York State Median Income Gap")
+            .labelFormat(d3.format("$.0f"))
+
+
+            svg.append("g")
+            .attr("transform", "translate(500,10)")
+            .call(legend)
+            
+            
+
+
+
+            viewport.append("path")
+            .attr("class", "graticule")
+            .attr("d", path(d3.geoGraticule10()));
+    
+
+            viewport.selectAll("path.zip_code").data(zips.features)
+            .enter()
+            .append("path")
+            .attr("class", "zips")
+            .attr("d", path)
+            .attr("fill", "lightgrey")
+            .attr("stroke", "black")
+            .attr("stroke-width", 1)
+            .style("fill", d => colorScale(median_income[d.properties.median_income]))
+
+            
+
+            viewport.append("path")
+            .datum(stateMesh)
+            .attr("class", "state-outline")
+            .attr("d", path);
+
+            viewport.append("path")
+            .datum(zipsMesh)
+            .attr("class", "zip-outline")
+            .attr("d", path);
+
+            
+
+            
+            Position = projection([-76.4850, 42.4476])
+            console.log(Position);
+            viewport.append("circle")
+            .attr("r", 5)
+            .attr("fill", "black")
+            .attr("opacity", 2)
+            .attr("cx",Position[0])
+            .attr("cy", Position[1]);
+
+            
+
+            
+
+            var zoom = d3.zoom()
+                                .scaleExtent([1, 20])
+                                .translateExtent([[-50, -50], [mapWidth + 50, mapHeight + 50]]) 
+                                .on("zoom", mapZoomed);
+
+            map.call(zoom);
+
+            function mapZoomed({transform}) {
+                console.log(transform.k);
+                viewport.attr("transform", transform);
+
+                viewport.select(".state-outline")
+                    .style("stroke-width", 2 / transform.k);
+                viewport.select(".zip-outline")
+                    .style("stroke-width", 1 / transform.k);
+
+                viewport.select(".zip-outline")
+                    .attr("visibility", (transform.k > 3) ? "visible" : "hidden");
+                
+                // viewport.selectAll(".zips")
+                //     .attr("visibility", (transform.k > 3) ? "visible" : "hidden");
+            
+
+        
+
+                    
+            }
+
+
+        }
+        requestData();
+
+
+</script>
+
+
+</html>

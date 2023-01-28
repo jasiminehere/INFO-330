@@ -1,0 +1,102 @@
+<html>
+<head>
+<link href="https://fonts.googleapis.com/css?family=Lato:400,700|Raleway:400,700" rel="stylesheet">
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+    
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+
+<style>
+    .state {
+      fill: lightgrey;
+    }
+    .outline {
+      fill: none;
+      stroke: black;
+      stroke-width: 1px;
+    }
+    .graticule {
+        fill: none;
+        stroke: grey;
+        stroke-width: 1px;
+    }
+    .tooltip {
+        pointer-events: none;
+    }
+</style>
+</head>
+
+
+<body>
+    <svg id="choropleth" height="600" width="900" style="background: #445; margin-top:50px"></svg>
+
+
+</body>
+
+<script>
+        const svg = d3.select("#choropleth");
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+        const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+        const mapWidth = width - margin.left - margin.right;
+        const mapHeight = height - margin.top - margin.bottom;
+        const map = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+
+        const requestData = async function (){
+        const us = await d3.json("us-smaller.json");
+        console.log(us);
+        var states = topojson.feature(us, us.objects.states ); 
+        var statesMesh = topojson.mesh(us, us.objects.states);  
+        var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states);
+        var path = d3.geoPath().projection(projection);
+        console.log(states);
+        console.log(statesMesh);
+
+        // 2d. Add a graticule (we did this after 2c, but it must go here)
+    //      (Graticules are much more configurable, but we'll use the default for now)
+        let graticule = d3.geoGraticule10();
+            console.log(graticule);
+            map.append("path").attr("class", "graticule").attr("d", path(graticule));
+
+        
+
+        let statePaths = map.selectAll("path.state").data(states.features)
+                .join("path")
+                .attr("class", "state")
+                .attr("note", d => d.id)  // debugging
+                .attr("d", path)
+        
+        map.append("path").datum(statesMesh)
+                .attr("class", "outline")
+                .attr("d", path);
+        
+        const surveyData = await d3.csv("state-survey-responses-fa22.csv", d3.autoType);
+            console.log(surveyData);
+
+        // 3b. Generate the data structures we will need
+            let stateIdCounts = {} // stateID => count #
+            let stateIdNames = {} // stateID => name of state
+            surveyData.forEach(row => {
+                stateIdCounts[row.state_code] = Number(row.total);
+                stateIdNames[row.state_code] = row.state_name;
+            });
+            console.log(stateIdCounts);
+
+            const minMax = d3.extent(Object.values(stateIdCounts));
+            console.log(minMax);
+
+            const colorScale = d3.scaleQuantile()      // LLLLLLLLL
+                .domain(Object.values(stateIdCounts))
+                .range(["#fff", "#d1e8ed", "#adc2da", "#8879b3", "#762b80"]);
+            statePaths.style("fill", d => colorScale(d.id))
+        
+    }
+    requestData();
+
+</script>
+
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+    <title>Document</title>
+
+    <style>
+        .change-my-color {
+  background-color: black;
+}
+    </style>
+</head>
+<body>
+   
+    <fieldset>
+        <h3>Problem 1</h3>
+        <ul>
+            <li> A: It is divergent scale, but not an effective divergent color scale.
+                it has Hue variable here and incoporates luminosity. However, usually the middle
+                of a divergence scale is neutral color, either white, black, grey or very desaturated color. Blue is not a good choice here.
+            <li>
+                B: It is not an effective color scale for this task. Sentiment should normally use divergent color scale. 
+                It should have a bright middle value and then go darker to both ends of the scales
+                in different hues
+
+            </li>
+
+            <li>
+               C: Blue-blind/Tritanopia; Blue-weak/Tritanomaly
+            </li>
+            <li>
+                D: Yes, because rainbow scale uses a different colour scheme.
+                People can see boundaries between colours and clearly see differences among 
+                different areas, which  is helpful to analyze life expectacy based on counties.
+                
+                </li>
+        </ul>
+    </fieldset>
+
+
+    <p>
+        <h3>Problem 2</h3>
+        <svg id="all" height="500" width="500" class="change-my-color"></svg>
+
+
+        <script>
+const svg = d3.select("svg#all");
+const width1 = svg.attr("width");
+const height1 = svg.attr("height");
+const margin = {top: 10, right: 10, bottom: 50, left: 50};
+const chartWidth = width1 - margin.left - margin.right;
+const chartHeight = height1 - margin.top - margin.bottom;
+
+let annotations = svg.append("g").attr("id","annotations");
+let chartArea = svg.append("g").attr("id","points")
+                .attr("transform","translate("+margin.left+","+margin.top+")")
+                .attr('color', 'black')
+
+
+ // Import some CSV data
+d3.csv("NCAA_shots.csv").then((data)=>{
+
+    data.forEach(d=>{
+        d['new_x']  = Number(d['x']) * 5
+        d['new_y'] = Number(d['y']) * 5
+        d['new_width'] = Number(d['width']) * 5
+        d['new_height'] = Number(d['height']) * 5
+        console.log(data);
+    })
+})
+
+
+
+        </script>
+    </p>
+
+
+    <h3>Problem 3</h3>
+<p>
+    <div id="chart"></div>
+
+    <script>
+        function getRandomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
+function image(){
+
+	d3.select("#chart")
+		.style("width", "420px")
+		.style("height", "420px");
+
+	const enterColor = "#c6db5f",//apple green
+		  updateColor = "#759e7e",//muted green
+		  svgBackgroundColor = '#152c33'
+		  width = 420,
+		  height = 420,
+		  numRows = 12,
+		  numCols = 12,
+		  radius = 16,
+		  numNodes = numRows * numCols;
+
+	//x and y axis scales
+	const y = d3.scaleBand()
+		.range([0,400])
+		.domain(d3.range(numRows));
+
+	const x = d3.scaleBand()
+		.range([0, 400])
+		.domain(d3.range(numCols));
+
+     let colorScale = d3.scaleLinear().domain([1,7])
+                                   .range([d3.rgb("#a008f2"), d3.rgb("#f9d6ec")])
+                                   .interpolate(d3.interpolateHcl);
+
+	let circleNodes = d3.range(numNodes).map(function(i) {
+	    return {
+	    	id: i,
+	    	radius: radius,
+	        x: x(i%numCols),
+	        y: y(Math.floor(i/numCols))
+	    };
+	});
+
+	const svg = d3.select('#chart')
+		.append('div')
+		.append('svg')
+		.attr("viewBox", "0 0 500 500")
+		.append('g');
+
+	//container to hold the grid
+	const container = svg.append("g")
+		.attr("transform", `translate(65,65)`);
+		
+	function showCircle(nodes){
+		let t = d3.transition()
+	      .duration(750);
+	    let circles = container.selectAll("circle")
+			.data(nodes,d=>d.id);
+		circles
+			.join(
+				enter => enter.append("circle")
+							  .attr("fill", d => colorScale(d.age)),
+				update => update
+							  .attr("cx", d => d['x'] )
+                      .attr("cy", d => d['y'] )
+                      .attr("fill", d => colorScale(d.age)), 
+				
+				)
+			.attr('cx', d => d.x)
+			.attr('cy', d => d.y)
+			.attr('r', d => d.radius)	
+            
+         exit => { 
+            exit.remove() 
+          }
+	}
+
+	//initial layout	
+	showCircle(circleNodes);
+
+
+}
+	//call function to draw the graph
+	image();
+    </script>
+</p>
+
+   
+    
+
+</body>
+</html>

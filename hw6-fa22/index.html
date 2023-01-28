@@ -1,0 +1,104 @@
+<html>
+
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+    .gridlines line{
+        stroke: #bbb
+    }
+
+    .gridlines .domain{
+        stroke:none
+    }
+    </style>
+</head>
+
+<body>
+
+<svg id="all" height="500" width="800" margin-bottom="30px" "></svg>
+
+    <script>
+    const svg = d3.select("svg#all");
+    const width = svg.attr("width");
+    const height = svg.attr("height");
+    const margin = {top: 10, right: 10, bottom: 50, left: 50};
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    let annotations = svg.append("g").attr("id","annotations");
+    let chartArea = svg.append("g").attr("id","points")
+                    .attr("transform",`translate(${margin.left},${margin.top})`);
+
+
+        d3.json('mariokart_records.json', d3.autoType)
+        .then((data)=>{
+            console.log(data);
+            
+        const parser = d3.timeParse("%Y-%m-%d")
+        const earliestDate = parser(data["earliest_date"])
+        const latestDate = parser(data["latest_date"])
+    
+    
+        const timeScale = d3.scaleTime().domain([earliestDate,latestDate]).range([0, chartWidth])
+        const valueScale = d3.scaleLinear().domain([data["min_value"],data["max_value"]]).range([chartHeight, 0]);
+        let colScale = d3.scaleOrdinal(d3.schemeCategory10)
+        
+        let leftAxis = d3.axisLeft(valueScale).tickFormat(d3.format("0"));
+        let leftGridlines = d3.axisLeft(valueScale)
+                            .tickSize(-chartWidth-10)
+                            .tickFormat("")
+
+        annotations.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                    .call(leftAxis)
+        annotations.append("g")
+                    .attr("class", "y gridlines")
+                    .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                    .call(leftGridlines);
+        
+        
+        let bottomAxis = d3.axisBottom(timeScale)
+        let bottomGridlines =d3.axisBottom(timeScale)
+                                .tickSize(-chartHeight-10)
+                                .tickFormat('')
+        
+        annotations.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform",`translate(${margin.left},${chartHeight+margin.top + 10})`)
+                    .call(bottomAxis)
+
+        annotations.append("g")
+                    .attr("class", "x gridlines")
+                    .attr("transform",`translate(${margin.left},${chartHeight+margin.top + 10})`)
+                    .call(bottomGridlines)
+        
+
+        var lineGen = d3.line()
+                        .x(d=>timeScale(parser(d['date'])))
+                        .y(d=>valueScale(d['record_time']))
+        
+        let gtags = chartArea.selectAll('line').data(data.timeseries)
+                .join('g')
+                .style('stroke', d=>colScale(d.track))
+                .style('stroke-width', 2)
+                .style('fill', 'none')
+                .attr('class','line')
+
+        gtags.append('path')
+            .attr('d',d=>lineGen(d.values))
+        
+        gtags.selectAll('circle')
+                .data(d=>d["values"])
+                .join('circle')
+                .attr('r', 2)
+                .attr("cx", d => timeScale(parser(d["date"])))     
+                .attr("cy", d => valueScale(d["record_time"]))  
+                .attr("fill", d => colScale(d["track"]))     
+
+
+        })
+
+    </script>
+</body>
+</html>

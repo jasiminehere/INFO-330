@@ -1,0 +1,175 @@
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <svg id="all" height="500" width="800" margin-bottom="30px" "></svg>
+    <br>
+    <p>A: I use forEach function to transfer string (price and points) to Number, so it can be used in our data join;
+        Besides, some data has no country name or region1, so I remove those missing data values. 
+    </p>
+    <p>B: I use scaleLog instead of scalelinear, because it can clearly illustrate data meaning. 
+        Besides, I use colorscale to color them by state </p>
+    <p>C: Jitter approach can prevent overplotting for the graph, and provide better data rendering in the graph;
+        However, jitter approach does change the data and therefore has to be performed with care. If we jitter too much, we end up placing points in locations that are not representative of the underlying dataset. The
+        result is a misleading visualization of the data  </p>
+    <p>D:When user moves mouse onto points, they can clearly see the title of the wine they are looking for and points will grow in size.
+        This approach can enable users to have interactions with graph and provide them with necessary information about datasets.
+    However, to make users understand better our graph, we should add the legend to add more information for users to know what the color means. </p>
+<script>
+    const requestData = async function (){
+            data = await d3.json('wines.json')
+            console.log(data);
+            // data = data.filter((d) => { return d['gdp'] != 0 && d['life'] != 0 && d['pop'] != 0; });      
+    };
+    requestData();
+
+    const svg = d3.select("svg#all");
+    const width = svg.attr("width");
+    const height = svg.attr("height");
+    const margin = { top: 10, right: 10, bottom: 50, left: 50 };
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    let annotations = svg.append("g").attr("id", "annotations");
+    let chartArea = svg.append("g").attr("id", "points")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    d3.json("wines.json", d3.autoType)
+            .then((data) => {
+                console.log(data);
+                data.forEach((d, i)=>{
+                    d['price'] = Number(d['price'].replace('$', ''));
+                    d['points'] = Number(d['points']);
+                })
+    data = data.filter((d) => { return d['country'] != 'NA'});
+    data = data.filter((d) => { return d['region_1'] != 'N/A' });
+    console.log(data);
+
+
+    // scale
+    const priceExtent = d3.extent(data, d => d['price']);
+    const priceScale = d3.scaleLog().domain(priceExtent).range([0, chartWidth]);
+    const pointExtent = d3.extent(data, d => d['points']);
+    const pointScale = d3.scaleLog().domain(pointExtent).range([chartHeight, 0]);
+    let colScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // Y axis
+    let leftAxis = d3.axisLeft(pointScale).tickFormat(d3.format("0"));
+        let leftGridlines = d3.axisLeft(pointScale)
+            .tickSize(-chartWidth - 10)
+            .tickFormat("")
+
+        annotations.append("g")
+            .attr("class", "y axis")
+            .attr("transform", `translate(${margin.left - 10},${margin.top})`)
+            .call(leftAxis)
+        annotations.append("g")
+            .attr("class", "y gridlines")
+            .attr("transform", `translate(${margin.left - 10},${margin.top})`)
+            .call(leftGridlines);
+    
+    // X axis
+    let bottomAxis = d3.axisBottom(priceScale)
+        let bottomGridlines = d3.axisBottom(priceScale)
+            .tickSize(-chartHeight - 10)
+            .tickFormat(d3.format("$.0s"))
+
+        annotations.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
+            .call(bottomAxis)
+
+        annotations.append("g")
+            .attr("class", "x gridlines")
+            .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
+            // .call(bottomGridlines)
+
+        
+        
+    // points
+    jitterX = function (d) {
+                    return priceScale(d['price']) + Math.random() * 8 - 4;
+                }
+    jitterY = function (d) {
+        return pointScale(d['points']) + Math.random() * 8 - 4;
+    }
+
+
+    let points = chartArea.selectAll("circle")
+        .data(data)
+        .join("circle")
+            .attr("cx", d => priceScale(d['price']) )
+            .attr("cy", d =>  pointScale(d['points']))
+            .attr("r", 5)
+            .attr("fill", d => colScale(d['state']))
+            .attr("opacity", 0.5)
+            .attr("stroke", "black")
+            .attr("stroke-width", 0.5)
+            .attr("class", "point")
+            .on("mouseover", function (d) {
+                d3.select(this).attr("r", 10);
+                d3.select(this).attr("stroke-width", 2);
+                d3.select(this).attr("opacity", 1);
+            })
+            .on("mouseout", function (d) {
+                d3.select(this).attr("r", 5);
+                d3.select(this).attr("stroke-width", 0.5);
+                d3.select(this).attr("opacity", 0.5);
+            })
+            .on("click", function (d) {
+                d3.select(this).attr("r", 15);
+                d3.select(this).attr("stroke-width", 3);
+                d3.select(this).attr("opacity", 1);
+            })
+            .on("dblclick", function (d) {
+                d3.select(this).attr("r", 5);
+                d3.select(this).attr("stroke-width", 0.5);
+                d3.select(this).attr("opacity", 0.5);
+            })
+        
+            jitterX = function (d) {
+                return priceScale(d['price']) + Math.random() * 10 - 5;
+            }
+            jitterY = function (d) {
+                return pointScale(d['points']) + Math.random() * 10 - 5;
+            }
+            
+        
+
+    // labels
+    let labels = chartArea.selectAll("text")
+        .data(data)
+        .join("text")
+            .attr("x", d => priceScale(d['price']))
+            .attr("y", d => pointScale(d['points']))
+            .attr("dx", 5)
+            .attr("dy", 5)
+            .attr("class", "label")
+            .text(d => d['title'])
+            .attr("opacity", 0)
+            .on("mouseover", function (d) {
+                d3.select(this).attr("opacity", 1);
+            })
+            .on("mouseout", function (d) {
+                d3.select(this).attr("opacity", 0);
+            })
+            .on("click", function (d) {
+                d3.select(this).attr("opacity", 1);
+            })
+            .on("dblclick", function (d) {
+                d3.select(this).attr("opacity", 0);
+            })
+        
+    // legend
+    let legend = svg.append("g")
+        .attr("id", "legend")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    });
+
+    
+
+
+</script>
+
+</body>
